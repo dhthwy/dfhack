@@ -41,6 +41,9 @@ add_custom_target(generate_headers DEPENDS ${CODEGEN_OUT})
 
 include_directories(include)
 
+find_package(Freetype REQUIRED)
+include_directories(${FREETYPE_INCLUDE_DIRS})
+
 add_subdirectory(xml)
 
 if(BUILD_LIBRARY)
@@ -52,6 +55,7 @@ set(MAIN_HEADERS
     include/DFHack.h
     include/DFHackVersion.h
     include/Console.h
+    include/SDL_console.h
     include/Core.h
     include/ColorText.h
     include/DataDefs.h
@@ -115,11 +119,12 @@ file(GLOB_RECURSE TEST_SOURCES
     *test.cpp)
 dfhack_test(dfhack-test "${TEST_SOURCES}")
 
-if(WIN32)
-    set(CONSOLE_SOURCES Console-windows.cpp)
-else()
-    set(CONSOLE_SOURCES Console-posix.cpp)
-endif()
+#if(WIN32)
+#    set(CONSOLE_SOURCES Console-windows.cpp)
+#else()
+#    set(CONSOLE_SOURCES Console-posix.cpp)
+#endif()
+set(CONSOLE_SOURCES Console-sdl.cpp SDL_console.cpp)
 
 set(MAIN_SOURCES_WINDOWS
     ${CONSOLE_SOURCES}
@@ -408,6 +413,11 @@ if(APPLE)
     set_target_properties(dfhack PROPERTIES SOVERSION 1.0.0)
 endif()
 
+find_package(Freetype REQUIRED)
+target_link_libraries(dfhack ${FREETYPE_LIBRARIES} GL SDL2)
+target_include_directories(dfhack PRIVATE ${FREETYPE_INCLUDE_DIRS})
+target_link_libraries(dfhack-client ${FREETYPE_LIBRARIES} GL SDL2 ${PROJECT_LIBS})
+
 target_link_libraries(dfhack protobuf-lite clsocket lua jsoncpp_static dfhack-version ${PROJECT_LIBS})
 set_target_properties(dfhack PROPERTIES INTERFACE_LINK_LIBRARIES "")
 
@@ -460,3 +470,4 @@ if(INSTALL_DATA_FILES)
         DESTINATION ${DFHACK_DATA_DESTINATION}
         FILES_MATCHING PATTERN "*.dif")
 endif()
+
