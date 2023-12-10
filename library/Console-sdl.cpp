@@ -106,7 +106,7 @@ namespace DFHack
             status = con_unclaimed;
 
             render_thread = std::thread([this] () {
-                tty = Console_Create("DFHack Console", prompt.c_str(), 16);
+                tty = Console_Create("DFHack Console", prompt.c_str(), 14);
                 if (tty == nullptr) {
                     fprintf(stderr, "%s\n", Console_GetError());
                     status = con_shutdown;
@@ -162,7 +162,7 @@ namespace DFHack
             print(chunk.c_str());
         }
 
-        int lineedit(const std::string& prompt, std::string& output, recursive_mutex * lock, CommandHistory & ch)
+        int lineedit(const std::string& prompt, std::string& output, CommandHistory & ch)
         {
             if (is_shutdown())
                 return Console::SHUTDOWN;
@@ -172,9 +172,7 @@ namespace DFHack
                 this->prompt = prompt;
             }
 
-          //  line_edit = true;
             int ret = Console_ReadLine(tty, output);
-          //  line_edit = false;
             if (ret == 0)
                 return Console::RETRY;
             return ret;
@@ -264,16 +262,8 @@ Console::~Console()
         delete d;
 }
 
-/*
- * We can't wait for the SDL console render thread
- * to spin up here else we'll deadlock. So we'll lie and say
- * inited is true. We can queue any operations
- * that make sense for queuing while we wait.
- *
- */
 bool Console::init(bool dont_redirect)
 {
-   // lock_guard <recursive_mutex> g(*wlock);
     d = new Private();
     inited = d->init();
     return inited;
@@ -399,7 +389,7 @@ int Console::lineedit(const std::string & prompt, std::string & output, CommandH
     if (!inited)
         return Console::SHUTDOWN;
 
-    int ret = d->lineedit(prompt,output,wlock,ch);
+    int ret = d->lineedit(prompt,output,ch);
     if (ret == Console::SHUTDOWN)
         inited = false;
     else if (ret == 0)
