@@ -1026,7 +1026,7 @@ console_on_remove_input (Console_tty *tty)
         tty->prompt.input.pop_back();
     } else {
         /* else shift the text from cursor left by one character */
-        tty->prompt.input.erase(tty->prompt.cursor, 1);
+        tty->prompt.input.erase(tty->prompt.cursor-1, 1);
     }
     tty->prompt.cursor -= 1;
     tty->prompt.rebuild = true;
